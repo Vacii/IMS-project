@@ -163,7 +163,7 @@ class Order : public Process{
       Leave(Picking,1);
 
       Enter(WarehouseWork);
-      Wait(random_gen(3,6));
+      Wait(random_gen_double(3.0,6.0));
       Leave(WarehouseWork,1);
 
       Table(Time-Prichod);
