@@ -78,14 +78,19 @@ bool opened = false;
 //delivery in process
 class DeliveryProcess : public Process{
   void Behavior(){
-    Wait(random_gen(120,240));
-    Leave(Car, 1);
+    if (random_gen_double(0.0, 100.0) > 5){     //5% failure rate
+      Wait(random_gen(120,240));
+      Leave(Car, 1);
+    } else {
+      Wait(random_gen(240,350));
+      Leave(Car, 1);
+    }
   }
 };
 
 class PackFrozen : public Process{
     void Behavior(){
-        if (random_gen_double(0.0, 100.0) > 0.7){   //0.7%
+        if (random_gen_double(0.0, 100.0) > 0.7){   //0.7% failure rate
           Into(FrozenPacked);
           Passivate();
         } else {
@@ -97,7 +102,7 @@ class PackFrozen : public Process{
 
 class PackDurables : public Process{
     void Behavior(){
-        if (random_gen_double(0.0, 100.0) > 0.3){   //0.3%
+        if (random_gen_double(0.0, 100.0) > 0.3){   //0.3% failure rate
           Into(DurablesPacked);
           Passivate();
         } else {
@@ -109,7 +114,7 @@ class PackDurables : public Process{
 
 class PackDrugs : public Process{
     void Behavior(){
-        if (random_gen_double(0.0, 100.0) > 0.5){   //0.5%
+        if (random_gen_double(0.0, 100.0) > 0.5){   //0.5% failure rate
           Into(DrugsPacked);
           Passivate();
         } else {
@@ -124,7 +129,7 @@ class LoadOrder : public Process{
   double zaciatok_nakladky;
   void Behavior(){
     zaciatok_nakladky = Time;
-    unsigned int order_to_be_taken = FrozenPacked.Length() / 4;
+    unsigned int order_to_be_taken = FrozenPacked.Length();
     //setting up cars maximal capacity
     if (order_to_be_taken <= CAPACITYOFCAR){
       for(unsigned int i=0;i<order_to_be_taken;i++){
