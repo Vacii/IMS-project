@@ -5,6 +5,7 @@ ZIP_NAME = 13_xbabja03_xvacla32.zip
 
 all:
 	g++ -Wall -pedantic -std=c++11 main.cpp -o ims -lsimlib -lm
+	./ims
 run:
 	./ims
 
