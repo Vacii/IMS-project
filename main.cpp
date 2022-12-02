@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  *
- * @brief Simulation of Tesco grocery delivery service
+ * @brief Simulation of Tesco grocery warehouse and delivery service
  *
  * @author Pavol Babjak - xbabja03
  * @author Lukáš Václavek - xvacla32
