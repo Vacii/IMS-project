@@ -81,6 +81,7 @@ class DeliveryProcess : public Process{
     if (random_gen_double(0.0, 100.0) > 5){     //5% failure rate
       Wait(random_gen(120,240));
       Leave(Car, 1);
+      printf("Test88\n");
     } else {
       Wait(random_gen(240,350));
       Leave(Car, 1);
@@ -129,8 +130,8 @@ class LoadOrder : public Process{
   double zaciatok_nakladky;
   void Behavior(){
     zaciatok_nakladky = Time;
-    unsigned int order_to_be_taken = FrozenPacked.Length();
-    //setting up cars maximal capacity TODO problem, jednou za cas to podle me tady padne
+    unsigned int order_to_be_taken = FrozenPacked.Length() /4;
+    //setting up cars maximal capacity TODO problem, jednou za cas to podle me tady padne, pokud oddelam 4. Opravim soon
     if (order_to_be_taken <= CAPACITYOFCAR){
       for(unsigned int i=0;i<order_to_be_taken;i++){
         if (FrozenPacked.Length() == 0){
