@@ -18,7 +18,7 @@
 //Time is in minutes
 
 #define NUMOFPICKERS 8
-#define NUMOFWAREHOUSEMEN 1
+// #define NUMOFWAREHOUSEMEN 1
 #define NUMOFCARS 4
 #define CAPACITYOFCAR 10
 
@@ -30,7 +30,7 @@ Queue DurablesPacked("Trvanlivé zboží ready na expedici");
 Queue IncomingOrder("Přišla nová objednávka");
 
 Store Picking("Picking", NUMOFPICKERS, IncomingOrder);
-Store WarehouseWork("Warehouse", NUMOFWAREHOUSEMEN);
+// Store WarehouseWork("Warehouse", NUMOFWAREHOUSEMEN);
 Store Car("Car", NUMOFCARS);
 
 Histogram Table("Príprava objednávky až po expedíciu",0,3,20);
@@ -159,12 +159,12 @@ class Order : public Process{
   void Behavior(){
     Prichod = Time;
       Enter(Picking);
-      Wait(random_gen_double(15.0,30.0));
+      Wait(random_gen_double(20.0,40.0));
       Leave(Picking,1);
 
-      Enter(WarehouseWork);
-      Wait(random_gen(3,6));
-      Leave(WarehouseWork,1);
+      // Enter(WarehouseWork);
+      // Wait(random_gen_double(3.0,6.0));
+      // Leave(WarehouseWork,1);
 
       Table(Time-Prichod);
 
