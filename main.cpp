@@ -269,7 +269,7 @@ int main(){
   Run();                                //run simulation
   Picking.Output();                     //print of results
   IncomingOrder.Output();
-  WarehouseWork.Output();
+  // WarehouseWork.Output();
   Car.Output();
   Table.Output();
   Table2.Output();
