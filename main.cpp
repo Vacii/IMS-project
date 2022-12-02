@@ -130,9 +130,12 @@ class LoadOrder : public Process{
   void Behavior(){
     zaciatok_nakladky = Time;
     unsigned int order_to_be_taken = FrozenPacked.Length();
-    //setting up cars maximal capacity
+    //setting up cars maximal capacity TODO problem, jednou za cas to podle me tady padne
     if (order_to_be_taken <= CAPACITYOFCAR){
       for(unsigned int i=0;i<order_to_be_taken;i++){
+        if (FrozenPacked.Length() == 0){
+          break;
+        }
         (FrozenPacked.GetFirst())->Activate();
         (DrugsPacked.GetFirst())->Activate();
         (DurablesPacked.GetFirst())->Activate();
@@ -140,6 +143,9 @@ class LoadOrder : public Process{
       }
     } else{
       for(unsigned int i=0;i<CAPACITYOFCAR;i++){
+        if (FrozenPacked.Length() == 0){
+          break;
+        }
         (FrozenPacked.GetFirst())->Activate();
         (DrugsPacked.GetFirst())->Activate();
         (DurablesPacked.GetFirst())->Activate();
