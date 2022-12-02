@@ -1,0 +1,15 @@
++ hraní s počtem pickerů a aut
+    -   aby objednávky nečekaly dlouho
+    -   maximální počet objednávek v autě
+    -   řidičovi chybí auto (například pokud se porouchá)
+
++ pickeri by byli rovnou i warehouse worker
+    -   bude jim to trvat trochu déle, ale netvorila by se fronta před warehouse workerem
+
++ přes dobu kdy chodí více objednávek zvýšit počet aut
+
++ u nákupu nového auta koupit auto s větší kapacitou na nákupy?
+
++ změnit počet warehouse workeru
+    - pozor aby nebyla zbytecne nizka vytizenost
+    - možná pokud worker pár min nic nedělá, mohl by se stát pickerem? to zatím nevíme jak udělat
