@@ -232,6 +232,18 @@ class DriverGenerator : public Event{
   void Behavior(){
     if (shifts>0)
     {
+      if (Time < 360 && Car.Free() <= 2){                    //store is closed before 6am
+        Car.SetCapacity(2);
+      } else if(Time < 660){              //before 11am
+        Car.SetCapacity(3);
+      } else if(Time < 780){              //before 1pm
+        Car.SetCapacity(4);
+      } else if(Time < 1080){             //before 6pm
+        Car.SetCapacity(5);
+      } else if(Time > 1320  && Car.Free() <= 3) {            //store is closed after 10pm
+        Car.SetCapacity(2);
+      }
+
       for (int i=0;i<4;i++)
       {
         (new Driver)->Activate();        //new driver
