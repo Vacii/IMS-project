@@ -19,7 +19,7 @@
 
 //Will change at 6am
 #define NUMOFPICKERS 0
-#define NUMOFWAREHOUSEMEN 1
+#define NUMOFWAREHOUSEMEN 0
 #define NUMOFCARS 4
 #define CAPACITYOFCAR 10
 
@@ -29,11 +29,12 @@ Queue FrozenPacked("Mražené objednávky ready na expedici");
 Queue DrugsPacked("Drogerie ready na expedici");
 Queue DurablesPacked("Trvanlivé zboží ready na expedici");
 Queue IncomingOrder("Přišla nová objednávka");
+Queue WarehouseQ("Objednávka čeká na příjmutí skladem");
 
 Queue WaitingOrders("Objednávky čekající na další den");
 
 Store Picking("Picking", NUMOFPICKERS, IncomingOrder);
-Store WarehouseWork("Warehouse", NUMOFWAREHOUSEMEN);
+Store WarehouseWork("Warehouse", NUMOFWAREHOUSEMEN, WarehouseQ);
 Store Car("Car", NUMOFCARS);
 
 Histogram Table("Príprava objednávky až po expedíciu",0,3,20);
@@ -65,7 +66,7 @@ double random_gen_double(double min, double max){
 -----------------------------------------------
 */
 int finalized_orders = 0;
-int shifts = 3;
+int shifts = 4;
 int part_of_day = 0;
 int remaining_orders = random_gen(10,30);
 bool opened = false;
@@ -184,7 +185,7 @@ class Order : public Process{
     Prichod = Time;
 
       //while store is not open, just add to picking queue and passivate.
-      if (Picking.Capacity() == 0){
+      if (Picking.Capacity() < 1){
         //when store is after oppening hours, insert new order request into orders for next day
         if (part_of_day == 4){
           Into(WaitingOrders);
@@ -215,8 +216,21 @@ class Order : public Process{
 
       Enter(WarehouseWork);
       Wait(random_gen_double(3.0,6.0));
-      Leave(WarehouseWork,1);
+      if (Time >= 1320){
 
+        while (WarehouseWork.Used() != 0){
+          Leave(WarehouseWork,1);
+        }
+
+        while (WarehouseQ.Length() != 0){
+          WaitingOrders.Insert(WarehouseQ.GetFirst());
+          Passivate();
+        }
+
+        WarehouseWork.SetCapacity(0);
+        return;
+      }
+      Leave(WarehouseWork,1);
       Table(Time-Prichod);
 
       (new PackFrozen)->Activate();
@@ -269,7 +283,7 @@ class OrderGenerator : public Event{
         break;
       case 4:
         (new Order)->Activate();
-        Activate(Time+random_gen_double(15.0,30.0));
+        Activate(Time+random_gen_double(5.0,10.0));
         break;
       default:
         (new Order)->Activate();
@@ -303,6 +317,7 @@ class TimeOfDayGen : public Event{
       part_of_day = 1;
       if (Picking.Capacity() == 0){
         Picking.SetCapacity(8);
+        WarehouseWork.SetCapacity(1);
       }
     } else if(Time < 780){              //before 1pm
       part_of_day = 2;
@@ -325,6 +340,7 @@ int main(){
   Picking.Output();                     //print of results
   IncomingOrder.Output();
   WarehouseWork.Output();
+  WarehouseQ.Output();
   Car.Output();
   WaitingOrders.Output();
   Table.Output();
