@@ -82,7 +82,6 @@ bool opened = false;
 //delivery in process
 class DeliveryProcess : public Process{
   void Behavior(){
-    printf("Vyjizdim a je prave: %f\n", Time);
     if (random_gen_double(0.0, 100.0) > 5){     //5% failure rate
       Wait(random_gen(120,240));
       Leave(Car, 1);
