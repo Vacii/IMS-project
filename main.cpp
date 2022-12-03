@@ -17,7 +17,8 @@
 
 //Time is in minutes
 
-#define NUMOFPICKERS 8
+//Will change at 6am
+#define NUMOFPICKERS 0
 #define NUMOFWAREHOUSEMEN 1
 #define NUMOFCARS 4
 #define CAPACITYOFCAR 10
@@ -28,6 +29,8 @@ Queue FrozenPacked("Mražené objednávky ready na expedici");
 Queue DrugsPacked("Drogerie ready na expedici");
 Queue DurablesPacked("Trvanlivé zboží ready na expedici");
 Queue IncomingOrder("Přišla nová objednávka");
+
+Queue WaitingOrders("Objednávky čekající na další den");
 
 Store Picking("Picking", NUMOFPICKERS, IncomingOrder);
 Store WarehouseWork("Warehouse", NUMOFWAREHOUSEMEN);
@@ -81,7 +84,6 @@ class DeliveryProcess : public Process{
     if (random_gen_double(0.0, 100.0) > 5){     //5% failure rate
       Wait(random_gen(120,240));
       Leave(Car, 1);
-      printf("Test88\n");
     } else {
       Wait(random_gen(240,350));
       Leave(Car, 1);
@@ -95,7 +97,12 @@ class PackFrozen : public Process{
           Into(FrozenPacked);
           Passivate();
         } else {
-          Into(IncomingOrder);
+          if (part_of_day == 4){
+            WaitingOrders.Insert(this);
+            Passivate();
+            return;
+          }
+          IncomingOrder.Insert(this);
           Passivate();
         }
     }
@@ -107,7 +114,12 @@ class PackDurables : public Process{
           Into(DurablesPacked);
           Passivate();
         } else {
-          Into(IncomingOrder);
+          if (part_of_day == 4){
+            WaitingOrders.Insert(this);
+            Passivate();
+            return;
+          }
+          IncomingOrder.Insert(this);
           Passivate();
         }
     }
@@ -119,7 +131,12 @@ class PackDrugs : public Process{
           Into(DrugsPacked);
           Passivate();
         } else {
-          Into(IncomingOrder);
+          if (part_of_day == 4){
+            WaitingOrders.Insert(this);
+            Passivate();
+            return;
+          }
+          IncomingOrder.Insert(this);
           Passivate();
         }
     }
@@ -165,8 +182,35 @@ class Order : public Process{
   double Prichod;
   void Behavior(){
     Prichod = Time;
+
+      //while store is not open, just add to picking queue and passivate.
+      if (Picking.Capacity() == 0){
+        //when store is after oppening hours, insert new order request into orders for next day
+        if (part_of_day == 4){
+          Into(WaitingOrders);
+          Passivate();
+          return;
+        }
+        Into(IncomingOrder);
+        Passivate();
+        return;
+      }
+
       Enter(Picking);
       Wait(random_gen_double(15.0,30.0));
+      //when the store closes, picker drops his current order, puts it into waiting queue (for another day) and leaves
+      if (Time >= 1320){
+        while (Picking.Used() != 0){
+          Leave(Picking,1);
+        }
+        while (IncomingOrder.Length() != 0){
+          WaitingOrders.Insert(IncomingOrder.GetFirst());
+          Passivate();
+        }
+        
+        Picking.SetCapacity(0);
+        return;
+      }
       Leave(Picking,1);
 
       Enter(WarehouseWork);
@@ -225,11 +269,11 @@ class OrderGenerator : public Event{
         break;
       case 4:
         (new Order)->Activate();
-        Activate(Time+random_gen_double(3.0,5.0));
+        Activate(Time+random_gen_double(15.0,30.0));
         break;
       default:
         (new Order)->Activate();
-        Activate(Time+random_gen_double(2.0,5.0));
+        Activate(Time+random_gen_double(15.0,30.0));
     }
   }
 };
@@ -257,27 +301,32 @@ class TimeOfDayGen : public Event{
       part_of_day = 0;
     } else if(Time < 660){              //before 11am
       part_of_day = 1;
+      if (Picking.Capacity() == 0){
+        Picking.SetCapacity(8);
+      }
     } else if(Time < 780){              //before 1pm
       part_of_day = 2;
     } else if(Time < 1080){             //before 6pm
       part_of_day = 3;
-    } else if(Time > 1320) {            //store is closed after 10pm
+    } else if(Time >= 1320) {            //store is closed after 10pm
       part_of_day = 4;
     }
-    Activate(Time+100);
+    Activate(Time+5);
   }
+
 };
 
 int main(){
-  Init(0,1440);                          //time limit is set for 16hours (one day)
+  Init(0,1440);                          //time simulates 24h (one day)
   (new TimeOfDayGen)->Activate();
   (new OrderGenerator)->Activate();     //order generator
-  (new DriverGenerator)->Activate(120);    //driver generator
+  (new DriverGenerator)->Activate(480);    //driver generator, starts at 8am
   Run();                                //run simulation
   Picking.Output();                     //print of results
   IncomingOrder.Output();
   WarehouseWork.Output();
   Car.Output();
+  WaitingOrders.Output();
   Table.Output();
   Table2.Output();
   return 0;
