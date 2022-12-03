@@ -22,11 +22,10 @@
 #define NUMOFWAREHOUSEMEN 0
 
 #define NUMOFCARS 4
-#define CARCAPACITY 10
+#define CARCAPACITY 12
 
 Queue driverWithCar;
-Queue orderPacked("Objednavky ready na expediciu");
-Queue FrozenPacked("Mražené objednávky ready na expedici");
+Queue FrozenPacked("Objednávky ready na expedici");
 Queue DrugsPacked("Drogerie ready na expedici");
 Queue DurablesPacked("Trvanlivé zboží ready na expedici");
 Queue IncomingOrder("Přišla nová objednávka");
@@ -67,7 +66,7 @@ double random_gen_double(double min, double max){
 -----------------------------------------------
 */
 int finalized_orders = 0;
-int shifts = 4;
+int shifts = 3;
 int part_of_day = 0;
 int remaining_orders = random_gen(20,50);
 bool opened = false;
@@ -83,6 +82,7 @@ bool opened = false;
 //delivery in process
 class DeliveryProcess : public Process{
   void Behavior(){
+    printf("Vyjizdim a je prave: %f\n", Time);
     if (random_gen_double(0.0, 100.0) > 5){     //5% failure rate
       Wait(random_gen(120,240));
       Leave(Car, 1);
@@ -338,6 +338,7 @@ int main(){
   IncomingOrder.Output();
   WarehouseWork.Output();
   WarehouseQ.Output();
+  FrozenPacked.Output();
   Car.Output();
   WaitingOrders.Output();
   Table.Output();
