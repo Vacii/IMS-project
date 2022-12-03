@@ -119,12 +119,6 @@ class PackSeparator : public Process{
       double failureDurables = random_gen_double(0.0, 100.0);
       double failureDrugs = random_gen_double(0.0, 100.0);
 
-      if (part_of_day == 4){
-        WaitingOrders.Insert(this);
-        Passivate();
-        return;
-      }
-
       //when there was no failure
       if (
           failureFrozen > 0.7 &&
@@ -279,7 +273,7 @@ class OrderGenerator : public Event{
         break;
       case 4:
         (new Order)->Activate();
-        Activate(Time+random_gen_double(10.0,15.0));
+        Activate(Time+random_gen_double(12.0,15.0));
         break;
       default:
         (new Order)->Activate();
@@ -321,6 +315,12 @@ class TimeOfDayGen : public Event{
       part_of_day = 3;
     } else if(Time >= 1320) {            //store is closed after 10pm
       part_of_day = 4;
+      while(FrozenPacked.Length() != 0){
+        WaitingOrders.Insert(FrozenPacked.GetFirst());
+        Passivate();
+      }
+      DrugsPacked.clear();
+      DurablesPacked.clear();
     }
     Activate(Time+5);
   }
