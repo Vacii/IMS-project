@@ -147,9 +147,11 @@ class LoadOrder : public Process{
   double zaciatok_nakladky;
   void Behavior(){
     zaciatok_nakladky = Time;
-    unsigned int order_to_be_taken = FrozenPacked.Length() /4;
-    //setting up cars maximal capacity TODO problem, jednou za cas to podle me tady padne, pokud oddelam 4. Opravim soon
+    unsigned int order_to_be_taken = FrozenPacked.Length();
+    printf("num of orders: %d\n", order_to_be_taken);
+    //setting up cars maximal capacity
     if (order_to_be_taken <= CAPACITYOFCAR){
+      printf("taking: %d\n", order_to_be_taken);
       for(unsigned int i=0;i<order_to_be_taken;i++){
         if (FrozenPacked.Length() == 0){
           break;
@@ -160,6 +162,7 @@ class LoadOrder : public Process{
         Wait(5);
       }
     } else{
+      printf("taking: %d\n", CAPACITYOFCAR);
       for(unsigned int i=0;i<CAPACITYOFCAR;i++){
         if (FrozenPacked.Length() == 0){
           break;
