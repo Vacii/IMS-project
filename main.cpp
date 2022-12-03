@@ -20,8 +20,9 @@
 //Will change at 6am
 #define NUMOFPICKERS 0
 #define NUMOFWAREHOUSEMEN 0
+
 #define NUMOFCARS 4
-#define CAPACITYOFCAR 10
+#define CARCAPACITY 10
 
 Queue driverWithCar;
 Queue orderPacked("Objednavky ready na expediciu");
@@ -68,7 +69,7 @@ double random_gen_double(double min, double max){
 int finalized_orders = 0;
 int shifts = 4;
 int part_of_day = 0;
-int remaining_orders = random_gen(10,30);
+int remaining_orders = random_gen(20,50);
 bool opened = false;
 
 
@@ -94,52 +95,50 @@ class DeliveryProcess : public Process{
 
 class PackFrozen : public Process{
     void Behavior(){
-        if (random_gen_double(0.0, 100.0) > 0.7){   //0.7% failure rate
-          Into(FrozenPacked);
-          Passivate();
-        } else {
-          if (part_of_day == 4){
-            WaitingOrders.Insert(this);
-            Passivate();
-            return;
-          }
-          IncomingOrder.Insert(this);
-          Passivate();
-        }
+      Into(FrozenPacked);
+      Passivate();
     }
 };
 
 class PackDurables : public Process{
     void Behavior(){
-        if (random_gen_double(0.0, 100.0) > 0.3){   //0.3% failure rate
-          Into(DurablesPacked);
-          Passivate();
-        } else {
-          if (part_of_day == 4){
-            WaitingOrders.Insert(this);
-            Passivate();
-            return;
-          }
-          IncomingOrder.Insert(this);
-          Passivate();
-        }
+      Into(DurablesPacked);
+      Passivate();
     }
 };
 
 class PackDrugs : public Process{
     void Behavior(){
-        if (random_gen_double(0.0, 100.0) > 0.5){   //0.5% failure rate
-          Into(DrugsPacked);
-          Passivate();
-        } else {
-          if (part_of_day == 4){
-            WaitingOrders.Insert(this);
-            Passivate();
-            return;
-          }
-          IncomingOrder.Insert(this);
-          Passivate();
-        }
+      Into(DrugsPacked);
+      Passivate();
+    }
+};
+
+class PackSeparator : public Process{
+    void Behavior(){
+      double failureFrozen = random_gen_double(0.0, 100.0);
+      double failureDurables = random_gen_double(0.0, 100.0);
+      double failureDrugs = random_gen_double(0.0, 100.0);
+
+      if (part_of_day == 4){
+        WaitingOrders.Insert(this);
+        Passivate();
+        return;
+      }
+
+      //when there was no failure
+      if (
+          failureFrozen > 0.7 &&
+          failureDurables > 0.3 &&
+          failureDrugs > 0.5
+      ) {
+        (new PackFrozen)->Activate();
+        (new PackDurables)->Activate();
+        (new PackDrugs)->Activate();
+      } else{     //failure handler
+        IncomingOrder.Insert(this);
+        Passivate();
+      }
     }
 };
 
@@ -150,7 +149,7 @@ class LoadOrder : public Process{
     zaciatok_nakladky = Time;
     unsigned int order_to_be_taken = FrozenPacked.Length();
     //setting up cars maximal capacity
-    if (order_to_be_taken <= CAPACITYOFCAR){
+    if (order_to_be_taken <= CARCAPACITY){
       for(unsigned int i=0;i<order_to_be_taken;i++){
         if (FrozenPacked.Length() == 0){
           break;
@@ -161,7 +160,7 @@ class LoadOrder : public Process{
         Wait(5);
       }
     } else{
-      for(unsigned int i=0;i<CAPACITYOFCAR;i++){
+      for(unsigned int i=0;i<CARCAPACITY;i++){
         if (FrozenPacked.Length() == 0){
           break;
         }
@@ -233,9 +232,7 @@ class Order : public Process{
       Leave(WarehouseWork,1);
       Table(Time-Prichod);
 
-      (new PackFrozen)->Activate();
-      (new PackDurables)->Activate();
-      (new PackDrugs)->Activate();
+      (new PackSeparator)->Activate();
   }
 };
 
