@@ -275,11 +275,11 @@ class OrderGenerator : public Event{
         break;
       case 3:
         (new Order)->Activate();
-        Activate(Time+random_gen_double(2.5,4.5));
+        Activate(Time+random_gen_double(5.0,10.0));
         break;
       case 4:
         (new Order)->Activate();
-        Activate(Time+random_gen_double(5.0,10.0));
+        Activate(Time+random_gen_double(10.0,15.0));
         break;
       default:
         (new Order)->Activate();
